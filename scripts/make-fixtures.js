@@ -1,10 +1,10 @@
-// Regenerates binary fixtures from the JSON ones: node test/make-fixtures.js
+// Regenerates binary fixtures from the JSON ones: node scripts/make-fixtures.js
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const { zipSync, strToU8 } = require('fflate');
 
-const dir = path.join(__dirname, 'fixtures');
+const dir = path.join(__dirname, '..', 'test', 'fixtures');
 const mela = fs.readFileSync(path.join(dir, 'tikka.melarecipe'));
 const mela2 = JSON.stringify({ id: 'example.com/pancakes', title: 'Pancakes', ingredients: '2 cups flour\n1 egg', instructions: 'Mix.\nFry.', link: 'Grandma' });
 fs.writeFileSync(

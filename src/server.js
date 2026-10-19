@@ -7,6 +7,7 @@ const { importRecipes } = require('./adapters');
 const { renderRecipe } = require('./render');
 const { renderSetup, shortcutFile } = require('./setup');
 const { escapeHtml: e } = require('./markdown');
+const { PLACEHOLDER_PATH, placeholderPng } = require('./placeholder');
 
 const MIME = { jpg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
 
@@ -50,11 +51,14 @@ function build(config) {
     const saved = result.recipes.map((r) => store.save(r));
     const urls = saved.map((r) => `${origin}/r/${r.slug}`);
     const v = parseInt(shortcutVersion, 10);
+    const updateAvailable = Number.isFinite(v) && v < config.currentShortcutVersion;
     return {
       url: urls[0],
       urls,
       format: result.format,
-      updateAvailable: Number.isFinite(v) && v < config.currentShortcutVersion,
+      updateAvailable,
+      // Only present when an update exists, so Shortcuts can test it with "has any value".
+      ...(updateAvailable ? { updateUrl: `${origin}/setup` } : {}),
     };
   });
 
@@ -70,6 +74,11 @@ function build(config) {
       .type('text/html; charset=utf-8')
       .send(renderRecipe(rec, { origin: originOf(req) }));
   });
+
+  const placeholder = placeholderPng();
+  app.get(PLACEHOLDER_PATH, async (req, reply) =>
+    reply.header('Cache-Control', 'public, max-age=86400').type('image/png').send(placeholder),
+  );
 
   app.get('/img/:file', async (req, reply) => {
     const p = store.imagePath(req.params.file);

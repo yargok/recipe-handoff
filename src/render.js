@@ -8,6 +8,7 @@
 // Text fields may contain the Markdown subset in markdown.js.
 const { escapeHtml: e, stripMarkdown, inlineHtml, blockHtml } = require('./markdown');
 const { toIsoDuration } = require('./duration');
+const { PLACEHOLDER_PATH } = require('./placeholder');
 
 const isUrl = (s) => {
   try {
@@ -20,8 +21,11 @@ const isUrl = (s) => {
 
 function buildJsonLd(r, abs) {
   const ld = { '@context': 'https://schema.org', '@type': 'Recipe', name: r.title };
+  // First-share date; re-sharing keeps createdAt.
+  if (r.createdAt) ld.datePublished = new Date(r.createdAt).toISOString();
   if (r.description) ld.description = stripMarkdown(r.description);
-  if (r.images.length) ld.image = r.images.map(abs);
+  // `image` is required by Google; fall back to a neutral placeholder (markup only, not shown on the page).
+  ld.image = r.images.length ? r.images.map(abs) : [abs(PLACEHOLDER_PATH)];
   const items = r.ingredients.filter((i) => i.type === 'item').map((i) => stripMarkdown(i.text));
   if (items.length) ld.recipeIngredient = items;
 
@@ -87,7 +91,7 @@ ol.steps li::marker{color:var(--accent);font-weight:700}
 
 const BANNER = `
 <div id="handoff" role="status">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M11 18.5h2"/></svg>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="2.5" width="17" height="14" rx="3.2"/><rect x="5.5" y="16.5" width="13" height="5" rx="1.8"/></svg>
   <div><strong>Continue on HomeView</strong><small>Hold iPhone near HomeView to pick up this recipe in the kitchen.</small></div>
   <button type="button" aria-label="Dismiss" onclick="this.parentNode.classList.remove('show')">&times;</button>
 </div>

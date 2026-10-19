@@ -28,6 +28,7 @@ test('share, render, reshare, prune', async () => {
   assert.strictEqual(res.statusCode, 200);
   const j = res.json();
   assert.strictEqual(j.updateAvailable, true);
+  assert.match(j.updateUrl, /\/setup$/);
   assert.match(j.url, /\/r\/chicken-tikka-masala-[0-9a-f]{4}$/);
 
   const page = await app.inject({ url: new URL(j.url).pathname + '?handoff=1' });
@@ -37,6 +38,8 @@ test('share, render, reshare, prune', async () => {
   assert.ok(!page.body.includes('<Masala>'));
   const ld = JSON.parse(page.body.match(/ld\+json">(.*?)<\/script>/)[1]);
   assert.match(ld.image[0], /^http:\/\/localhost:80\/img\/|^http:\/\/.+\/img\/[0-9a-f]+-0\.png$/);
+
+  assert.match(ld.datePublished, /^\d{4}-\d{2}-\d{2}T/);
 
   const img = await app.inject({ url: new URL(ld.image[0]).pathname });
   assert.strictEqual(img.statusCode, 200);
@@ -85,4 +88,17 @@ test('multipart upload', async () => {
   const res = await app.inject({ method: 'POST', url: '/api/recipes', payload: body, headers: { 'content-type': `multipart/form-data; boundary=${boundary}` } });
   assert.strictEqual(res.statusCode, 200);
   assert.strictEqual(res.json().updateAvailable, false);
+  assert.strictEqual('updateUrl' in res.json(), false);
+});
+
+test('recipe without photo gets placeholder image in markup only', async () => {
+  const app = mk();
+  const res = await app.inject({ method: 'POST', url: '/api/recipes', payload: fx('stew.paprikarecipes'), headers: { 'content-type': 'application/octet-stream' } });
+  const page = await app.inject({ url: new URL(res.json().url).pathname });
+  const ld = JSON.parse(page.body.match(/ld\+json">(.*?)<\/script>/)[1]);
+  assert.match(ld.image[0], /\/img\/placeholder\.png$/);
+  assert.ok(!page.body.includes('class="hero"'));
+  const img = await app.inject({ url: '/img/placeholder.png' });
+  assert.strictEqual(img.headers['content-type'], 'image/png');
+  assert.strictEqual(img.rawPayload.subarray(1, 4).toString(), 'PNG');
 });
