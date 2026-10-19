@@ -1,0 +1,11 @@
+{"uuid":"B8DE6DC2-0A3F-42E3-9213-98FBC0E333CC","name":"Mushroom Risotto","defaultScale":1,"isPublicRecipe":false,"serves":4,"duration":15,"cookingDuration":35,
+"sourceName":"example.com","webLink":"https://example.com/risotto","neutritionalInfo":"Calories: 555 kcal,\nProtein: 27 g","notes":"Use good stock.","images":["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="],"tags":["Dinner","Vegetarian"],"folderIDs":[],
+"ingredients":[
+{"uuid":"A0000000-0000-0000-0000-000000000001","order":1,"ingredient":{"uuid":"A0000000-0000-0000-0000-0000000000A1","name":"arborio rice ($0.50)"},"quantity":{"quantityType":"CUP","amount":1.5}},
+{"uuid":"A0000000-0000-0000-0000-000000000000","order":0,"ingredient":{"uuid":"A0000000-0000-0000-0000-0000000000A0","name":"Base"},"quantity":{"quantityType":"SECTION"}},
+{"uuid":"A0000000-0000-0000-0000-000000000002","order":2,"ingredient":{"uuid":"A0000000-0000-0000-0000-0000000000A2","name":"yellow onion"},"quantity":{"quantityType":"ITEM","amount":1}},
+{"uuid":"A0000000-0000-0000-0000-000000000003","order":3,"ingredient":{"uuid":"A0000000-0000-0000-0000-0000000000A3","name":"butter"},"quantity":{"quantityType":"TABLESPOON","amount":0.3333333333333333}}],
+"steps":[
+{"uuid":"C0000000-0000-0000-0000-000000000001","order":1,"step":"Soften the onion in butter.","isSection":false},
+{"uuid":"C0000000-0000-0000-0000-000000000000","order":0,"step":"Start","isSection":true},
+{"uuid":"C0000000-0000-0000-0000-000000000002","order":2,"step":"Add rice and stir for 20 minutes.","isSection":false}]}

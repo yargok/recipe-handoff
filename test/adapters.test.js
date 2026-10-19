@@ -65,3 +65,29 @@ test('json-ld passthrough', () => {
 test('rejects garbage', () => {
   assert.throws(() => importRecipes(Buffer.from('hello'), 'x.txt'), /Unrecognized/);
 });
+
+test('crouton .crumb', () => {
+  const { format, recipes } = importRecipes(fx('risotto.crumb'), 'risotto.crumb');
+  assert.strictEqual(format, 'crouton');
+  const r = recipes[0];
+  assert.deepStrictEqual(r.ingredients, [
+    { type: 'heading', text: 'Base' },
+    { type: 'item', text: '1 1/2 cup arborio rice' },
+    { type: 'item', text: '1 yellow onion' },
+    { type: 'item', text: '1/3 Tbsp butter' },
+  ]);
+  assert.deepStrictEqual(r.instructions.map((s) => s.type), ['section', 'step', 'step']);
+  assert.strictEqual(r.nutrition, 'Calories: 555 kcal\nProtein: 27 g');
+  assert.strictEqual(r.notes, 'Use good stock.');
+  assert.strictEqual(r.images[0].ext, 'png');
+  const ld = buildJsonLd(r, (u) => u);
+  assert.strictEqual(ld.prepTime, 'PT15M');
+  assert.strictEqual(ld.cookTime, 'PT35M');
+  assert.strictEqual(ld.recipeYield, '4 servings');
+  assert.strictEqual(ld.isBasedOn, 'https://example.com/risotto');
+  assert.deepStrictEqual(ld.recipeIngredient[0], '1 1/2 cup arborio rice');
+});
+
+test('crouton detected without a filename', () => {
+  assert.strictEqual(importRecipes(fx('risotto.crumb'), '').format, 'crouton');
+});

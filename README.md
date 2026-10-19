@@ -44,7 +44,7 @@ Re-sharing a recipe overwrites its page. A nightly sweep (03:00) removes recipes
 | Mela `.melarecipe`, `.melarecipes` | supported |
 | Paprika `.paprikarecipes` | supported |
 | schema.org JSON-LD (`.json`) | supported |
-| Crouton `.crumb` | not yet |
+| Crouton `.crumb` | supported |
 
 Adding a format = one file in `src/adapters/` that returns the internal recipe shape (see `src/render.js`), registered in `src/adapters/index.js`, plus a fixture and test.
 

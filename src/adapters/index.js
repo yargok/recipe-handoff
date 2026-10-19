@@ -1,6 +1,6 @@
 // Each adapter: { name, detect(buf, filename) -> bool, parse(buf) -> internalRecipe[] }.
 // Internal recipe: see docs in render.js. Add a format = one file here + a fixture in test/fixtures.
-const adapters = [require('./mela'), require('./paprika'), require('./jsonld')];
+const adapters = [require('./mela'), require('./paprika'), require('./crouton'), require('./jsonld')];
 
 function importRecipes(buf, filename = '') {
   for (const a of adapters) {
