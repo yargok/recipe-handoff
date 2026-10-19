@@ -81,7 +81,7 @@ ol.steps li{padding:6px 0 6px 4px}
 ol.steps li::marker{color:var(--accent);font-weight:700}
 .notes p,.notes ul{margin:.4em 0}
 .src{color:var(--muted);font-size:.9rem;margin-top:1.6em}
-#handoff{position:fixed;left:12px;right:12px;top:12px;max-width:560px;margin:0 auto;z-index:10;display:none;gap:12px;align-items:center;padding:14px;border-radius:18px;background:var(--card);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 4px 24px rgba(0,0,0,.15)}
+#handoff{max-width:560px;width:calc(100% - 24px);margin:12px auto 0;display:none;gap:12px;align-items:center;padding:14px;border-radius:18px;background:var(--card)}
 #handoff.show{display:flex}
 #handoff svg{flex:none;width:34px;height:34px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #handoff strong{display:block}
