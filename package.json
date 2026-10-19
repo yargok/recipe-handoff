@@ -1,0 +1,23 @@
+{
+  "name": "recipe-handoff",
+  "version": "0.1.0",
+  "description": "Share a recipe from a recipe app, get a clean schema.org Recipe page for kitchen displays and browsers.",
+  "license": "MIT",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@fastify/multipart": "^8.3.1",
+    "dotenv": "^18.0.8",
+    "fastify": "^4.29.1",
+    "fflate": "^0.8.3",
+    "qrcode": "^1.5.4"
+  }
+}

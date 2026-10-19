@@ -1,0 +1,19 @@
+{
+  "id": "https://example.com/chicken tikka?x=1&y=<2>",
+  "title": "Chicken Tikka <Masala>",
+  "text": "Smoky and creamy. See [the original](https://example.com/tikka).",
+  "images": ["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="],
+  "categories": ["Dinner", "Indian"],
+  "yield": "4 servings",
+  "prepTime": "20 min",
+  "cookTime": "1 hr 15 min",
+  "totalTime": "overnight",
+  "ingredients": "# Marinade\n1 cup yogurt\n2 tsp [garam masala](https://example.com/gm)\n# Sauce\n1 can tomatoes\n**1** onion",
+  "instructions": "# Marinate\n**Mix:** Combine yogurt and spices.\nRest for 30 minutes.\n# Cook\n* **Grill** the chicken for 10 minutes.\nSimmer the sauce.",
+  "notes": "# Tips\n* Use thighs\n* Don't skip the **char**",
+  "nutrition": "Calories: 400",
+  "link": "https://example.com/tikka",
+  "favorite": true,
+  "wantToCook": false,
+  "date": 700000000
+}
