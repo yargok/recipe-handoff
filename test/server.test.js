@@ -102,3 +102,23 @@ test('recipe without photo gets placeholder image in markup only', async () => {
   assert.strictEqual(img.headers['content-type'], 'image/png');
   assert.strictEqual(img.rawPayload.subarray(1, 4).toString(), 'PNG');
 });
+
+test('/latest has its own bookmark icon; recipe pages do not', async () => {
+  const app = mk();
+  const latest = await app.inject({ url: '/latest' });
+  assert.match(latest.body, /rel="apple-touch-icon" href="\/latest-bookmark-icon\.png"/);
+  assert.match(latest.body, /og:image" content="http:\/\/[^"]+\/latest-hero\.png"/);
+  assert.match(latest.body, /<img class="hero" src="\/latest-hero\.png"/);
+  const ld = JSON.parse(latest.body.match(/ld\+json">(.*?)<\/script>/)[1]);
+  assert.strictEqual(ld['@type'], 'WebPage'); // never Recipe: must not trigger cooking mode
+  assert.match(ld.image, /\/latest-hero\.png$/);
+  const png = await app.inject({ url: '/latest-bookmark-icon.png' });
+  assert.strictEqual(png.headers['content-type'], 'image/png');
+  assert.strictEqual(png.rawPayload.subarray(1, 4).toString(), 'PNG');
+  assert.strictEqual((await app.inject({ url: '/latest-icon.svg' })).headers['content-type'], 'image/svg+xml');
+  const res = await app.inject({ method: 'POST', url: '/api/recipes', payload: fx('tikka.melarecipe'), headers: { 'content-type': 'application/octet-stream' } });
+  const page = await app.inject({ url: new URL(res.json().url).pathname });
+  assert.ok(!page.body.includes('apple-touch-icon'));
+  // Root-path icons are deliberately not served: they would apply to recipe pages too.
+  for (const u of ['/favicon.ico', '/apple-touch-icon.png']) assert.strictEqual((await app.inject({ url: u })).statusCode, 404);
+});

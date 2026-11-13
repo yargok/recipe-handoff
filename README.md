@@ -36,6 +36,8 @@ pm2 install pm2-logrotate   # rotates logs/out.log and logs/error.log
 - `GET /latest` – leave open on HomeView; navigates to each newly shared recipe (SSE, with polling fallback). `/latest?go` jumps to the newest now.
 - `GET /img/:file`, `GET /version`, `GET /setup`.
 
+`/latest` has its own wireframe icon (`assets/`), served only on `/latest`-specific paths. On HomeView it shows up as the thumbnail in Safari's history; a *pinned* tile still falls back to a letter for plain-HTTP sites. We tried link icons, a manifest, root `/favicon.ico` and `/apple-touch-icon.png`, and a fresh address, and Safari fetched them all without using them. Serving over HTTPS is the one untested difference from sites like Home Assistant that do get a pinned icon. Root-path icons are deliberately not served, so recipe bookmarks keep their food photo.
+
 Re-sharing a recipe overwrites its page. A nightly sweep (03:00) removes recipes older than `PRUNE_DAYS`.
 
 ## Formats

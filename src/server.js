@@ -75,6 +75,18 @@ function build(config) {
       .send(renderRecipe(rec, { origin: originOf(req) }));
   });
 
+  // Bookmark icon for /latest only. Deliberately not /apple-touch-icon.png, which Safari would
+  // request for every page and use instead of a recipe's own photo.
+  const assetsDir = path.join(config.root || path.join(__dirname, '..'), 'assets');
+  for (const [route, file, type] of [
+    ['/latest-hero.png', 'latest-hero.png', 'image/png'], // big image on the page; Safari uses it as the history thumbnail
+    ['/latest-bookmark-icon.png', 'latest-touch-icon.png', 'image/png'], // apple-touch-icon / icon link
+    ['/latest-icon.svg', 'latest-icon.svg', 'image/svg+xml'],
+  ]) {
+    const body = fs.readFileSync(path.join(assetsDir, file));
+    app.get(route, async (req, reply) => reply.header('Cache-Control', 'public, max-age=86400').type(type).send(body));
+  }
+
   const placeholder = placeholderPng();
   app.get(PLACEHOLDER_PATH, async (req, reply) =>
     reply.header('Cache-Control', 'public, max-age=86400').type('image/png').send(placeholder),
@@ -125,8 +137,26 @@ function build(config) {
     return reply.header('Cache-Control', 'no-store').type('text/html; charset=utf-8').send(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Waiting for a recipe</title>
-<style>:root{color-scheme:light dark}body{font:20px/1.4 -apple-system,system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center;padding:24px}a{color:#ff9500}small{opacity:.6}</style></head>
-<body><div><h1>Waiting for a recipe&hellip;</h1>
+<link rel="apple-touch-icon" href="/latest-bookmark-icon.png">
+<link rel="icon" type="image/png" href="/latest-bookmark-icon.png">
+<link rel="icon" type="image/svg+xml" href="/latest-icon.svg">
+<meta property="og:title" content="Waiting for a recipe">
+<meta property="og:image" content="${originOf(req)}/latest-hero.png">
+<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Waiting for a recipe',
+      image: `${originOf(req)}/latest-hero.png`,
+      primaryImageOfPage: { '@type': 'ImageObject', url: `${originOf(req)}/latest-hero.png`, width: 512, height: 512 },
+    }).replace(/</g, '\\u003c')}</script>
+<style>
+html,body{margin:0;height:100%;background:#1c1c1e;color:#f2f2f7;font:17px/1.35 -apple-system,system-ui,sans-serif}
+.hero{display:block;width:100%;height:100vh;height:100dvh;object-fit:contain}
+.box{position:fixed;left:14px;right:14px;bottom:14px;max-width:520px;margin:0 auto;padding:14px 16px;border-radius:18px;text-align:center;background:rgba(120,120,128,.32);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+h1{font-size:1.25rem;margin:0 0 .2em}p{margin:.2em 0}a{color:#ff9500}small{opacity:.75}
+</style></head>
+<body><img class="hero" src="/latest-hero.png" alt="">
+<div class="box"><h1>Waiting for a recipe&hellip;</h1>
 <p>Share one from your iPhone and it will open here.</p>
 ${rec ? `<p><small>Last shared: <a href="/latest?go">${e(rec.title)}</a></small></p>` : ''}</div>
 <script>
