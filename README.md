@@ -8,13 +8,14 @@ Send a recipe from your recipe app to the kitchen display. Share it from your iP
 - Accepts the recipe files your app already exports: **Mela** (`.melarecipe`, `.melarecipes`), **Paprika** (`.paprikarecipes`), **Crouton** (`.crumb`), or plain schema.org **JSON-LD**.
 - Serves each recipe as a fast, readable page: photo, ingredients with group headings, steps, notes, source link. Light and dark mode, sized for iPhone and a small square display.
 - Re-sharing a recipe updates its page, so edits carry over.
+- Browse everything you've shared recently on the `/recent` page.
 - Cleans up after itself: recipes not shared for 7 days are removed (configurable).
 
 ## Using it
 1. **Share the recipe** from your recipe app's share sheet and choose the **Send Recipe to HomeView** shortcut. The app should share the recipe as a file (Mela, Paprika or Crouton's native export), not as text or a link.
 2. The recipe opens in Safari on your phone. Now get it onto the kitchen display, either way:
    - **Handoff:** hold your iPhone near HomeView. A "Continue on HomeView" banner appears on the phone; handoff picks up the same page.
-   - **Waiting page:** bookmark `http://<server>:8765/latest` on HomeView and leave it open. It shows "Waiting for a recipe" and jumps to each recipe the moment you share one, with nothing to touch in the kitchen. Open `/latest?go` to jump to the most recent recipe immediately.
+   - **Waiting page:** bookmark `http://<server>:8765/latest` on HomeView and leave it open. It shows "Waiting for a recipe" and jumps to each recipe the moment you share one, with nothing to touch in the kitchen. Open `/latest?go` to jump to the most recent recipe immediately, or follow its **Recent recipes** link to reopen an earlier one from HomeView.
 3. Tap **Start Cooking** on HomeView.
 
 ## Install the server
@@ -67,7 +68,7 @@ The nightly cleanup runs at 03:00 server time (set `TZ` in Docker).
   ```bash
   curl -X POST http://<server>:8765/api/recipes -H 'X-Filename: dinner.melarecipe' --data-binary @dinner.melarecipe
   ```
-- `GET /r/:slug`: recipe page. `GET /latest`: waiting page. `GET /setup`: shortcut install page. `GET /version`.
+- `GET /r/:slug`: recipe page. `GET /latest`: waiting page. `GET /recent`: all recent recipes. `GET /setup`: shortcut install page. `GET /version`.
 
 ## Development
 ```bash
