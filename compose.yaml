@@ -1,0 +1,21 @@
+# Save this file on your server and run:  docker compose up -d
+# Then open http://<server-address>:8765/setup on your iPhone.
+services:
+  recipe-handoff:
+    image: ghcr.io/yargok/recipe-handoff:latest
+    # build: .            # use this instead of `image:` to build from a clone of the repo
+    container_name: recipe-handoff
+    restart: unless-stopped
+    ports:
+      - "8765:8765"       # host:container. Change the left number to use another port.
+    volumes:
+      - recipe-data:/data
+    environment:
+      TZ: UTC                         # your time zone, e.g. America/Chicago; sets when the nightly 03:00 cleanup runs
+      PRUNE_DAYS: 7                   # delete recipes not shared in N days; 0 = never
+      # MAX_RECIPES: 200              # optional cap; oldest by last share go first
+      # BASE_URL: http://192.168.1.20:8765   # address shown on /setup, if auto-detect is wrong
+      # SHORTCUT_ICLOUD_URL: https://www.icloud.com/shortcuts/...   # your own iCloud link for the Add Shortcut button
+
+volumes:
+  recipe-data:

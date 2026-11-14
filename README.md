@@ -1,64 +1,78 @@
 # recipe-handoff
 
-Share a recipe from a recipe app on iPhone, get a clean web page with schema.org `Recipe` markup served from a small home server, and continue on Apple HomeView (or any browser) using Safari's built-in cooking mode.
+Send a recipe from your recipe app to the kitchen display. Share it from your iPhone and recipe-handoff turns it into a clean web page with schema.org `Recipe` markup, so Safari's cooking mode (Start Cooking, step-by-step view, tappable timers) works on Apple HomeView or any browser.
 
 > **Home networks only.** There is no authentication. Do not expose this server to the internet.
 
-## Quick start
-```bash
-npm install
-cp .env.example .env     # edit if needed
-npm start                # http://<host>:8765
-```
-Open `http://<host>:8765/setup` on your iPhone to install the Shortcut (button, QR code, and the server address to paste into the Shortcut's import question).
+## What it does
+- Accepts the recipe files your app already exports: **Mela** (`.melarecipe`, `.melarecipes`), **Paprika** (`.paprikarecipes`), **Crouton** (`.crumb`), or plain schema.org **JSON-LD**.
+- Serves each recipe as a fast, readable page: photo, ingredients with group headings, steps, notes, source link. Light and dark mode, sized for iPhone and a small square display.
+- Re-sharing a recipe updates its page, so edits carry over.
+- Cleans up after itself: recipes not shared for 7 days are removed (configurable).
 
-### Run under PM2
+## Using it
+1. **Share the recipe** from your recipe app's share sheet and choose the **Send Recipe to HomeView** shortcut. The app should share the recipe as a file (Mela, Paprika or Crouton's native export), not as text or a link.
+2. The recipe opens in Safari on your phone. Now get it onto the kitchen display, either way:
+   - **Handoff:** hold your iPhone near HomeView. A "Continue on HomeView" banner appears on the phone; handoff picks up the same page.
+   - **Waiting page:** bookmark `http://<server>:8765/latest` on HomeView and leave it open. It shows "Waiting for a recipe" and jumps to each recipe the moment you share one, with nothing to touch in the kitchen. Open `/latest?go` to jump to the most recent recipe immediately.
+3. Tap **Start Cooking** on HomeView.
+
+## Install the server
+Run it on any always-on machine on your home network (a Raspberry Pi, NAS, or mini PC). Pick one.
+
+### PM2
+Needs Node 18+.
 ```bash
+git clone https://github.com/yargok/recipe-handoff.git
+cd recipe-handoff
+npm install
+cp .env.example .env        # optional; edit settings
 pm2 start ecosystem.config.js
 pm2 save && pm2 startup
 pm2 install pm2-logrotate   # rotates logs/out.log and logs/error.log
 ```
+Plain `npm start` also works.
 
-## Config (`.env`)
-| Var | Default | |
+### Docker
+Save [`compose.yaml`](compose.yaml) on the server, adjust the settings in it, and run:
+```bash
+docker compose up -d
+```
+The image (`ghcr.io/yargok/recipe-handoff`, amd64 and arm64) keeps recipes in a named volume. To build it yourself, swap the `image:` line for `build: .` in a clone of this repo.
+
+## Install the shortcut on your iPhone
+**Quickest:** open the [Send Recipe to HomeView shortcut](https://www.icloud.com/shortcuts/1b76ea79550c47749e56d5971b0301cb) on your iPhone and tap **Add Shortcut**. When asked for the server address, enter yours, e.g. `http://192.168.1.20:8765`.
+
+**From your own server:** open `http://<server>:8765/setup` on your iPhone (or scan the QR code on that page from another screen). Tap **Add Shortcut**, and when asked for the server address, enter the one shown on the page, e.g. `http://192.168.1.20:8765`.
+
+The shortcut is a signed file in [`shortcut/`](shortcut/), which your server hands out, so everyone running their own server gets it from their own `/setup` page. You can also set `SHORTCUT_ICLOUD_URL` to your own iCloud share link and the button will use that instead.
+
+## Settings
+Set as environment variables: in the `environment:` block of `compose.yaml`, or in `.env` when running with PM2 or `npm start`.
+
+| Variable | Default | |
 |---|---|---|
 | `PORT` | 8765 | |
 | `HOST` | 0.0.0.0 | |
-| `DATA_DIR` | ./data | recipes and images (git-ignored) |
+| `DATA_DIR` | ./data | recipes and images (`/data` in Docker) |
 | `PRUNE_DAYS` | 7 | delete recipes not shared in N days; 0 = never |
 | `MAX_RECIPES` | unset | cap; oldest by last share go first |
-| `BASE_URL` | derived | public address used in links/QR |
+| `BASE_URL` | derived | address used in links and the QR code |
 | `SHORTCUT_ICLOUD_URL` | unset | iCloud link for the "Add Shortcut" button |
 
-## Endpoints
-- `POST /api/recipes` – multipart (`file`, optional `shortcutVersion`) or raw body (`X-Filename`, `X-Shortcut-Version` headers). Returns `{ url, urls, format, updateAvailable }`.
-- `GET /r/:slug` – recipe page with JSON-LD. `?handoff=1` shows the iPhone banner, then strips itself from the URL.
-- `GET /latest` – leave open on HomeView; navigates to each newly shared recipe (SSE, with polling fallback). `/latest?go` jumps to the newest now.
-- `GET /img/:file`, `GET /version`, `GET /setup`.
+The nightly cleanup runs at 03:00 server time (set `TZ` in Docker).
 
-`/latest` has its own wireframe icon (`assets/`), served only on `/latest`-specific paths. On HomeView it shows up as the thumbnail in Safari's history; a *pinned* tile still falls back to a letter for plain-HTTP sites. We tried link icons, a manifest, root `/favicon.ico` and `/apple-touch-icon.png`, and a fresh address, and Safari fetched them all without using them. Serving over HTTPS is the one untested difference from sites like Home Assistant that do get a pinned icon. Root-path icons are deliberately not served, so recipe bookmarks keep their food photo.
+## HTTP API
+- `POST /api/recipes`: multipart (`file`) or raw body (`X-Filename` header). Returns `{ url, urls, format, updateAvailable }`. Handy for scripting without the shortcut:
+  ```bash
+  curl -X POST http://<server>:8765/api/recipes -H 'X-Filename: dinner.melarecipe' --data-binary @dinner.melarecipe
+  ```
+- `GET /r/:slug`: recipe page. `GET /latest`: waiting page. `GET /setup`: shortcut install page. `GET /version`.
 
-Re-sharing a recipe overwrites its page. A nightly sweep (03:00) removes recipes older than `PRUNE_DAYS`.
-
-## Formats
-| Format | Status |
-|---|---|
-| Mela `.melarecipe`, `.melarecipes` | supported |
-| Paprika `.paprikarecipes` | supported |
-| schema.org JSON-LD (`.json`) | supported |
-| Crouton `.crumb` | supported |
-
-Adding a format = one file in `src/adapters/` that returns the internal recipe shape (see `src/render.js`), registered in `src/adapters/index.js`, plus a fixture and test.
-
-## Tests
+## Development
 ```bash
 npm test
 ```
-Validate a page's markup with Google's Rich Results Test (code mode) and the schema.org validator.
-
-## Open questions (verify when HomeView ships)
-- Does HomeView Safari detect recipes on plain HTTP LAN pages, or require HTTPS?
-- Does `/latest` navigating to a new recipe trigger Start Cooking like a normal load?
-- Which step phrasings become tappable timers?
+Adding a recipe format is one file in `src/adapters/` that returns the internal recipe shape (see `src/render.js`), registered in `src/adapters/index.js`, plus a fixture and test. See [DESIGN.md](DESIGN.md) for background.
 
 MIT licensed.

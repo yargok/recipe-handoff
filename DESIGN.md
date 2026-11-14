@@ -14,8 +14,8 @@ Share a recipe from a recipe app on iPhone, get a clean web page with schema.org
 4. Alternative: a `/latest` page left open on HomeView jumps to the newest shared recipe automatically.
 
 ## Stack
-- Node, small HTTP server (Express or Fastify), run under PM2 with `ecosystem.config.js`.
-- Config via `.env` (commit `.env.example` only): `PORT` (default 8765), `HOST` (default 0.0.0.0), `DATA_DIR`, `PRUNE_DAYS` (default 7, 0 = never prune), optional `MAX_RECIPES`.
+- Node, small HTTP server (Fastify), run under PM2 with `ecosystem.config.js` or as a Docker image (`Dockerfile`, `compose.yaml`).
+- Config via environment variables: `.env` for PM2/`npm start` (commit `.env.example` only), the `environment:` block of `compose.yaml` for Docker: `PORT` (default 8765), `HOST` (default 0.0.0.0), `DATA_DIR`, `PRUNE_DAYS` (default 7, 0 = never prune), optional `MAX_RECIPES`.
 - Log to file with rotation (pm2-logrotate).
 - Intended for home networks only. Document that it should not be exposed to the internet.
 
