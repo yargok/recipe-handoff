@@ -18,7 +18,7 @@ Send a recipe from your recipe app to the kitchen display. Share it from your iP
 3. Tap **Start Cooking** on HomeView.
 
 ## Install the server
-Run it on any always-on machine on your home network (a Raspberry Pi, NAS, or mini PC). Pick one.
+Run it on any always-on machine on your home network (a Raspberry Pi, NAS, or mini PC). Pick either PM2 or docker compose; whichever one works better for your environment.
 
 ### PM2
 Needs Node 18+.
