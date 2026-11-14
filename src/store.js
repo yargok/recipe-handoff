@@ -97,6 +97,11 @@ class Store extends EventEmitter {
     return best;
   }
 
+  /** All live recipes, newest shared first. */
+  list() {
+    return [...this.index.values()].sort((a, b) => b.lastShared - a.lastShared);
+  }
+
   imagePath(file) {
     if (!/^[0-9a-f]+-\d+\.(jpg|png|gif|webp)$/.test(file)) return null;
     const p = path.join(this.imgDir, file);

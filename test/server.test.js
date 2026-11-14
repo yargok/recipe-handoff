@@ -57,6 +57,12 @@ test('share, render, reshare, prune', async () => {
 
   assert.strictEqual((await app.inject({ url: '/latest' })).statusCode, 200);
   assert.strictEqual((await app.inject({ url: '/latest?go' })).statusCode, 302);
+  assert.match((await app.inject({ url: '/latest' })).body, /href="\/recent">All</);
+  const recent = await app.inject({ url: '/recent' });
+  assert.strictEqual(recent.statusCode, 200);
+  const links = [...recent.body.matchAll(/href="\/r\/([^"]+)"/g)].map((m) => m[1]);
+  assert.deepStrictEqual(links, app.store.list().map((r) => r.slug));
+  assert.strictEqual(links.length, app.store.index.size);
   assert.strictEqual((await app.inject({ url: '/api/latest' })).json().title.length > 0, true);
 
   // Prune: nothing fresh is removed; backdate and it goes.

@@ -151,20 +151,48 @@ function build(config) {
     }).replace(/</g, '\\u003c')}</script>
 <style>
 html,body{margin:0;height:100%;background:#1c1c1e;color:#f2f2f7;font:17px/1.35 -apple-system,system-ui,sans-serif}
-.hero{display:block;width:100%;height:100vh;height:100dvh;object-fit:contain}
-.box{position:fixed;left:14px;right:14px;bottom:14px;max-width:520px;margin:0 auto;padding:14px 16px;border-radius:18px;text-align:center;background:rgba(120,120,128,.32);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.hero{position:absolute;left:0;top:25vh;top:25dvh;transform:translateY(-50%);display:block;width:100%;height:40vh;height:40dvh;object-fit:contain}
+.box{position:fixed;left:14px;right:14px;bottom:28px;max-width:520px;margin:0 auto;padding:14px 16px;border-radius:18px;text-align:center;background:rgba(120,120,128,.32);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
 h1{font-size:1.25rem;margin:0 0 .2em}p{margin:.2em 0}a{color:#ff9500}small{opacity:.75}
+.row{margin:.5em 0 0}.ttl{display:inline-block;max-width:100%;text-wrap:balance;overflow-wrap:anywhere;line-height:1.25}
 </style></head>
 <body><img class="hero" src="/latest-hero.png" alt="">
 <div class="box"><h1>Waiting for a recipe&hellip;</h1>
 <p>Share one from your iPhone and it will open here.</p>
-${rec ? `<p><small>Last shared: <a href="/latest?go">${e(rec.title)}</a></small></p>` : ''}</div>
+${rec ? `<p class="row"><small>Last shared:</small><br><a class="ttl" href="/latest?go">${e(rec.title).replace(/\s+([-\u2013\u2014|:\u2022\/&+])(?=\s)/g, '\u00a0$1')}</a></p>
+<p class="row"><small>Recent recipes:</small> <a href="/recent">All</a></p>` : ''}</div>
 <script>
+function fit(){var b=document.querySelector('.box'),h=document.querySelector('.hero');if(!b||!h)return;var a=b.getBoundingClientRect().top;if(a<60)return;h.style.height=(a*0.85)+'px';h.style.top=(a/2)+'px'}
+fit();addEventListener('resize',fit);addEventListener('load',fit);
 var since=${since};
 function go(d){if(d&&d.url&&d.lastShared>since)location.href=d.url}
 if(window.EventSource){var es=new EventSource('/events');es.onmessage=function(m){go(JSON.parse(m.data))}}
 setInterval(function(){fetch('/api/latest',{cache:'no-store'}).then(function(r){return r.json()}).then(go).catch(function(){})},5000);
 </script></body></html>`);
+  });
+
+  // Every live recipe, newest first.
+  app.get('/recent', async (req, reply) => {
+    const items = store.list().map((r) => {
+      const img = r.images && r.images[0];
+      const when = new Date(r.lastShared).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `<li><a href="/r/${e(r.slug)}">${img ? `<img src="${e(img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}<span class="t">${e(r.title)}<small>${when}</small></span></a></li>`;
+    });
+    return reply.header('Cache-Control', 'no-store').type('text/html; charset=utf-8').send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recent recipes</title>
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:16px 16px 40px;font:17px/1.35 -apple-system,system-ui,sans-serif;background:#fff;color:#000}
+@media(prefers-color-scheme:dark){body{background:#1c1c1e;color:#f2f2f7}}
+main{max-width:560px;margin:0 auto}h1{font-size:1.4rem}ul{list-style:none;margin:0;padding:0}
+li a{display:flex;align-items:center;gap:12px;padding:8px 0;color:inherit;text-decoration:none}
+img,.ph{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:none;background:#8e8e9340}
+.t{display:flex;flex-direction:column}small{opacity:.6}.back{color:#ff9500}
+</style></head><body><main>
+<h1>Recent recipes</h1>
+${items.length ? `<ul>${items.join('')}</ul>` : '<p>Nothing shared yet.</p>'}
+<p><a class="back" href="/latest">&larr; Back to waiting page</a></p></main></body></html>`);
   });
 
   app.get('/version', async () => ({
